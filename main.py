@@ -1,74 +1,77 @@
 import requests
 import json
-import csv, json
+import csv
+import json
 import bisect
-class Auction:
-	def __init__(self, id, item, bid, buyout, quantity, time_left):
-		self.id = id;
-		self.item = item;
-		self.bid = bid;
-		self.buyout = buyout;
-		self.quantity = quantity;
-		self.time_left = time_left;
+import sys
 
-	def get_item_name(self):
-		return get_item_by_id(self.item['id'])
 
 def get_data_from_request():
-	f = open("access_token.json")
-	data = json.load(f)
-	access_token = str(data['access_token'])
+    f = open("access_token.json")
+    data = json.load(f)
+    access_token = str(data['access_token'])
 
-	custom_params = {"namespace":"dynamic-classic-us", "locale":"en_US", "access_token": access_token}
+    custom_params = {"namespace": "dynamic-classic-us",
+                     "locale": "en_US", "access_token": access_token}
 
-	res = requests.get('https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2',params=custom_params)
-	data = res.json()
+    res = requests.get(
+        'https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2', params=custom_params)
 
-	with open("auction_data.json", 'w') as f:
-		json.dump(data,f)
-	return data
+    data = res.json()
+    with open("auction_data.json", 'w') as f:
+        json.dump(data, f)
+    return res.status_code
 
-def get_data_from_file(): 
-	f = open("auction_data.json")
-	return json.load(f)
+
+def get_data_from_file():
+    f = open("auction_data.json")
+    return json.load(f)
 
 
 def get_item_by_name(find_id):
-	csv_file = "items.csv"
+    csv_file = "items.csv"
+    data = {}
+    with open(csv_file) as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+        for rows in csv_reader:
+            entry = rows['entry']
+            name = rows['name']
+            data[name] = entry
+    if str(find_id) in data:
+        return data.get(str(find_id))
+    return 0
 
-	data = {}
-	with open(csv_file) as csv_file:
-		csv_reader = csv.DictReader(csv_file)
-		for rows in csv_reader:
-			entry = rows['entry']
-			name = rows['name']
-			data[name] = entry
-	if str(find_id) in data:
-		return data.get(str(find_id))
-	return 0
 
-auction_list = []
-data = get_data_from_file()
+def get_buyout_price(item_name):
+    data = get_data_from_file()
+    item_buyout = {}
+    for auction in data['auctions']:
+        item = auction['item']['id']
+        buyout = auction['buyout']
+        item_buyout[item] = buyout
 
-for auction in data['auctions']:
-	id = auction['id']
-	item = auction['item']
-	bid = auction['bid']
-	buyout = auction['buyout']
-	quantity = auction['quantity']
-	time_left = auction['time_left']
-	auction_list.append(Auction(id,item,bid,buyout,quantity,time_left))
+    sorted_list = sorted(item_buyout.items(), key=lambda x: x[0])
+    id_to_find = get_item_by_name(str(item_name))
 
-item_buyout = {}
+    for i in sorted_list:
+        if str(i[0]) == str(id_to_find):
+            return str(i[1])
 
-for auction in data['auctions']:
-	item = auction['item']['id']
-	buyout = auction['buyout']
-	item_buyout[item] = buyout
+    return "Not found"
 
-sorted_list = sorted(item_buyout.items(), key=lambda x: x[0])
-id_to_find =  get_item_by_name("Recipe: Hot Lion Chops")
+opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
+args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 
-for i in sorted_list:
-	if str(i[0]) == str(id_to_find):
-		print("BUYOUT PRICE: " + str(i[1]))
+if "-u" in opts:
+    # call blizz api and update our auction file
+    data = get_data_from_request()
+    print("Request returned code: " + str(data))
+    if int(data) == 200:
+        print("Data updated and dumped into auction_data_json succesfully ")
+    else:
+        print("Data could not be updated")
+elif "-i" or "--item" in opts:
+    print("Last buyout price listed for item is:")
+    print(get_buyout_price(str(args[0])))
+else:
+    raise SystemExit()
