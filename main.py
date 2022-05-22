@@ -1,9 +1,9 @@
 import requests
 import json
 import csv
-import json
 import bisect
 import sys
+from os.path import exists
 
 def get_data_from_request():
     """ Call Blizzard's API at us.api.blizzard.com/data/wow/connected-realm/{realm}/auctions/{auction}
@@ -21,8 +21,7 @@ def get_data_from_request():
     custom_params = {"namespace": "dynamic-classic-us",
                      "locale": "en_US", "access_token": access_token}
 
-    res = requests.get(
-        'https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2', params=custom_params)
+    res = requests.get('https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2', params=custom_params)
 
     data = res.json()
     with open("auction_data.json", 'w') as f:
@@ -91,8 +90,18 @@ def copper_to_gsc(value):
     c = (value%10000) % 100
     return int(g), int(s), int(c)
 
+# Get options and args
 opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
+
+# If auction_data.json doesnt exist, update data 
+if not exists("auction_data.json"):
+    print("Auction data not found, updating Data...")
+    data = get_data_from_request()
+    if int(data) == 200:
+        print("Data updated correctly")
+    else:
+        print("Data could not be updated, make sure you are using a correct token")
 
 if "-u" in opts:
     # call blizz api and update our auction file
