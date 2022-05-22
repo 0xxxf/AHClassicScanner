@@ -5,7 +5,6 @@ import json
 import bisect
 import sys
 
-
 def get_data_from_request():
     f = open("access_token.json")
     data = json.load(f)
@@ -59,6 +58,13 @@ def get_buyout_price(item_name):
 
     return "Not found"
 
+def copper_to_gsc(value):
+    g = value / 10000
+    s = (value%10000) / 100
+    c = (value%10000) % 100
+    return int(g), int(s), int(c)
+
+
 opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 
@@ -71,7 +77,8 @@ if "-u" in opts:
     else:
         print("Data could not be updated")
 elif "-i" or "--item" in opts:
-    print("Last buyout price listed for item is:")
-    print(get_buyout_price(str(args[0])))
+    print("Last buyout price listed (Gold,Silver,Copper):")
+    price = get_buyout_price(str(args[0]))
+    print(copper_to_gsc(int(price)))
 else:
     raise SystemExit()
