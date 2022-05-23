@@ -58,7 +58,6 @@ def get_buyout_price(item_name):
     for i in sorted_list:
         if str(i[0]) == str(id_to_find):
             return str(i[1])
-
     return 0
 
 def copper_to_gsc(value):
@@ -82,7 +81,7 @@ args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 # If auction_data.json doesnt exist, update data 
 if not exists("auction_data.json"):
     print("Auction data not found, updating Data...")
-    data = get_auctionhouse_data("us",4408,2)
+    data = get_auctionhouse_data("us",4408,2, True)
     if int(data) == 200:
         print("Data updated correctly")
     else:
@@ -90,14 +89,14 @@ if not exists("auction_data.json"):
 
 if "-u" in opts:
     # call blizz api and update our auction file
-    data = api_caller.get_auctionhouse_data(get_access_token(),"us",4408,2)
-    print("Request returned code: " + str(data))
-    if int(data) == 200:
+    data = api_caller.get_auctionhouse_data(get_access_token(),"us",4408,2,True)
+    print("Request returned code: " + str(data[1]))
+    if int(data[1]) == 200:
         print("Data updated and dumped into auction_data_json succesfully ")
     else:
         print("Data could not be updated")
 elif "-r" or "--realms" in opts:
-    api_caller.get_realm_list(get_access_token())
+    print(api_caller.get_realm_list(get_access_token()))
 elif "-i" or "--item" in opts:
     price = get_buyout_price(str(args[0]))
     if price == 0:
