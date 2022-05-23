@@ -1,5 +1,6 @@
 import requests,json
 
+#TODO: change return type and standarize it across call functions, doesn't make much sense like this
 def get_auctionhouse_data(access_token, region, realm, faction):
     """ Call Blizzard's API at us.api.blizzard.com/data/wow/connected-realm/{realm}/auctions/{auction}
 
