@@ -21,5 +21,10 @@ python3 main.py -u
 
 * Retrieve item by name
 ```sh
-python3 main.py -i {item_name}
+python3 main.py -i {item_name} {region} {realm_id} 
+```
+
+* Get all realms IDs
+```sh
+python3 main.py -r 
 ```

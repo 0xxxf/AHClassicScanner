@@ -2,38 +2,9 @@ from os import access
 import requests
 import json
 import csv
-import bisect
 import sys
 from os.path import exists
-
-def get_auctionhouse_data():
-    """ Call Blizzard's API at us.api.blizzard.com/data/wow/connected-realm/{realm}/auctions/{auction}
-
-    Args:
-        realm: Id of desired realm
-        auction: Id of AH
-    Returns:
-        status code of the request
-    """
-    access_token = get_access_token()
-    custom_params = {"namespace": "dynamic-classic-us",
-                     "locale": "en_US", "access_token": access_token}
-
-    res = requests.get('https://us.api.blizzard.com/data/wow/connected-realm/4372/auctions/2', params=custom_params)
-
-    data = res.json()
-    with open("auction_data.json", 'w') as f:
-        json.dump(data, f)
-    return res.status_code
-
-def get_realm_list():
-    access_token = get_access_token()
-    custom_params = {"namespace": "dynamic-classic-us", "locale": "en_US", "access_token": access_token}
-
-    res = requests.get("https://us.api.blizzard.com/data/wow/realm/index", params=custom_params)
-    for item in res.json()['realms']:
-      print(item['name'],item['id'])
-    return res.json()
+import api_caller
 
 def get_access_token():
     f = open("access_token.json")
@@ -111,7 +82,7 @@ args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 # If auction_data.json doesnt exist, update data 
 if not exists("auction_data.json"):
     print("Auction data not found, updating Data...")
-    data = get_auctionhouse_data()
+    data = get_auctionhouse_data("us",4408,2)
     if int(data) == 200:
         print("Data updated correctly")
     else:
@@ -119,14 +90,14 @@ if not exists("auction_data.json"):
 
 if "-u" in opts:
     # call blizz api and update our auction file
-    data = get_auctionhouse_data()
+    data = api_caller.get_auctionhouse_data(get_access_token(),"us",4408,2)
     print("Request returned code: " + str(data))
     if int(data) == 200:
         print("Data updated and dumped into auction_data_json succesfully ")
     else:
         print("Data could not be updated")
 elif "-r" or "--realms" in opts:
-    get_realm_list()
+    api_caller.get_realm_list(get_access_token())
 elif "-i" or "--item" in opts:
     price = get_buyout_price(str(args[0]))
     if price == 0:
