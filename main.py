@@ -96,7 +96,7 @@ if "-u" in opts:
     else:
         print("Data could not be updated")
 elif "-r" or "--realms" in opts:
-    print(api_caller.get_realm_list(get_access_token()))
+    api_caller.get_realm_list(get_access_token())
 elif "-i" or "--item" in opts:
     price = get_buyout_price(str(args[0]))
     if price == 0:
