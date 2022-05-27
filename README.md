@@ -1,4 +1,5 @@
 # AH CLASSIC SCANNER
+# WIP: Writing a Library to access Data, updating to this repo for now (BlizzAPIHandler) but I will probably move it once it's done.
 ## A python script that finds buyout prices for WoW Classic AH items
 
 The scripts works by making calls to Blizzard's API, in order to make those calls you will need an API Client to generate an authentication token.
