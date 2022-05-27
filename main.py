@@ -6,12 +6,14 @@ import sys
 from os.path import exists
 import api_caller
 
+
 def get_access_token():
     f = open("access_token.json")
     data = json.load(f)
     access_token = str(data["access_token"])
     f.close()
     return access_token
+
 
 def get_data_from_file():
     f = open("auction_data.json")
@@ -23,7 +25,7 @@ def get_item_by_name(find_id):
 
     Returns:
         Id of item
-    """  
+    """
     csv_file = "items.csv"
     data = {}
     with open(csv_file) as csv_file:
@@ -60,6 +62,7 @@ def get_buyout_price(item_name):
             return str(i[1])
     return 0
 
+
 def copper_to_gsc(value):
     """ Converts copper into Gold,Silver,Copper format
 
@@ -69,19 +72,19 @@ def copper_to_gsc(value):
         Gold, Silver, Copper in Int format
     """
     g = value / 10000
-    s = (value%10000) / 100
-    c = (value%10000) % 100
+    s = (value % 10000) / 100
+    c = (value % 10000) % 100
     return int(g), int(s), int(c)
+
 
 # Get options and args
 opts = [opt for opt in sys.argv[1:] if opt.startswith("-")]
 args = [arg for arg in sys.argv[1:] if not arg.startswith("-")]
 
-
-# If auction_data.json doesnt exist, update data 
+# If auction_data.json doesnt exist, update data
 if not exists("auction_data.json"):
     print("Auction data not found, updating Data...")
-    data = get_auctionhouse_data("us",4408,2, True)
+    data = get_auctionhouse_data("us", 4408, 2, True)
     if int(data) == 200:
         print("Data updated correctly")
     else:
@@ -89,7 +92,8 @@ if not exists("auction_data.json"):
 
 if "-u" in opts:
     # call blizz api and update our auction file
-    data = api_caller.get_auctionhouse_data(get_access_token(),"us",4408,2,True)
+    data = api_caller.get_auctionhouse_data(
+        get_access_token(), "us", 4408, 2, True)
     print("Request returned code: " + str(data[1]))
     if int(data[1]) == 200:
         print("Data updated and dumped into auction_data_json succesfully ")
